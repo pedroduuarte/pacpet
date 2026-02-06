@@ -14,7 +14,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* LOGIN */}
         <Route
           path="/login"
           element={<Login onLogin={(user) => setUser(user)} />}
