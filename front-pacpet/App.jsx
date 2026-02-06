@@ -49,7 +49,6 @@ function App() {
           <Register />
           } />
 
-        {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
