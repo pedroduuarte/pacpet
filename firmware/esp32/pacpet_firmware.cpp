@@ -43,7 +43,7 @@
 // Variável com volatile para garantir thread-safety no estado
 volatile const char* feeding_status = "success";
 
-// 🔁 CONFIGURAÇÃO DO SEU DISPENSER
+// CONFIGURAÇÃO DO DISPENSER
 #define SERVO_FECHADO 180  
 #define SERVO_ABERTO    0  
 
@@ -114,7 +114,6 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
                 cJSON *json = cJSON_Parse(msg);
                 if (!json) break;
-                // 🔥 SE VIER COMO STRING, parse de novo
                 if (cJSON_IsString(json)) {
                     cJSON *inner = cJSON_Parse(json->valuestring);
                     cJSON_Delete(json);
@@ -210,7 +209,6 @@ void task_feeding_logic(void *pvParameters) {
     while (1) {
         if (alimentando) {
             TickType_t agora = xTaskGetTickCount();
-            // CORREÇÃO: uint32_t (era unit32_t)
             uint32_t elapsed_ms = (agora - inicio_tick) * portTICK_PERIOD_MS;
 
             // timeout de segurança
@@ -260,7 +258,6 @@ void task_mqtt_publisher(void *pvParameters) {
             cJSON_AddNumberToObject(root, "weightGrams", peso_atual);
             cJSON_AddNumberToObject(root, "openTimeMs", tempo_aberto_ms);
             cJSON_AddStringToObject(root, "type", feeding_type);
-            // CORREÇÃO: Cast para (const char*) para evitar erro com volatile
             cJSON_AddStringToObject(root, "status", (const char*)feeding_status);
             char *json = cJSON_PrintUnformatted(root);
 
