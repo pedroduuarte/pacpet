@@ -63,7 +63,6 @@ export default function ManualFeeding() {
       const data = await res.json();
       const { commandId } = data;
 
-      // começa o polling
       pollStatus(commandId);
 
     } catch (err) {

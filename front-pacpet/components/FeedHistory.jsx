@@ -46,7 +46,6 @@ export default function FeedHistory() {
             ? Math.round(item.openTimeMs / 1000)
             : "?";
 
-        // ALTERAÇÃO AQUI: Adicionado .toFixed(2)
         const amountGrams =
           typeof item.weightGrams === "number"
             ? `${item.weightGrams.toFixed(2)} g`

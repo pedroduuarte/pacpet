@@ -15,7 +15,7 @@ export default function FeedButton() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          openTimeMs: 3000 // 3 segundos (exemplo)
+          openTimeMs: 3000 
         })
       });
 

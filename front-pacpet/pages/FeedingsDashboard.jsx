@@ -3,7 +3,6 @@ import Navbar from "../components/Navbar";
 import Card from "../components/Card";
 import FeedHistory from "../components/FeedHistory";
 import Status from "../components/Status";
-// Se for usar os gráficos, importe-os aqui
 
 export default function FeedingsDashboard() {
   const [data, setData] = useState([]);
@@ -25,7 +24,6 @@ export default function FeedingsDashboard() {
 
   return (
     <div className="dashboard-container">
-      {/* 1. Navbar inserida no topo */}
       <Navbar />
 
       <main className="dashboard-content">
@@ -34,7 +32,6 @@ export default function FeedingsDashboard() {
           <p>Acompanhe o consumo de ração em tempo real</p>
         </header>
 
-        {/* 2. Seção de Estatísticas com cards modernos */}
         <section className="stats-grid">
           <div className="stat-card">
             <span className="stat-label">Liberações: </span>
@@ -46,7 +43,6 @@ export default function FeedingsDashboard() {
           </div>
         </section>
 
-        {/* 3. Grid de conteúdo principal */}
         <div className="dashboard-grid">
           <Card title="Histórico">
             <FeedHistory data={data} />

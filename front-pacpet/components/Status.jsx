@@ -18,7 +18,6 @@ export default function Status() {
 
         setStats({
           total: data.length,
-          // Converte para kg e formata com 2 casas decimais
           totalKg: (totalGrams / 1000).toFixed(2),
         });
 

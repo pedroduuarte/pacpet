@@ -20,7 +20,6 @@ function App() {
           element={<Login onLogin={(user) => setUser(user)} />}
         />
 
-        {/* DASHBOARD PRINCIPAL */}
         <Route
           path="/dashboard"
           element={
@@ -32,7 +31,6 @@ function App() {
           }
         />
 
-        {/* DASHBOARD DE FEEDINGS */}
         <Route
           path="/feedings"
           element={

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import React from "react";
-import { useNavigate } from "react-router-dom"; // 🔥 IMPORTANTE
+import { useNavigate } from "react-router-dom"; 
 import { login } from "../comedouro-automatico/src/services/auth";
 import "../css/Login.css";
 
@@ -10,7 +10,7 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate(); // 🔥 AQUI
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
@@ -24,9 +24,9 @@ export default function Login({ onLogin }) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      onLogin?.(data.user); // opcional, seguro
+      onLogin?.(data.user); 
 
-      navigate("/dashboard") // 🚀 REDIRECIONA
+      navigate("/dashboard") 
 
     } catch (err) {
       console.error("❌ ERRO NO LOGIN:", err.message);

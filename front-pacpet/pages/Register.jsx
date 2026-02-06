@@ -2,7 +2,7 @@ import { useState } from "react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../comedouro-automatico/src/services/auth";
-import "../css/Login.css"; // reaproveita o mesmo estilo
+import "../css/Login.css";
 
 export default function Register() {
   const [name, setName] = useState("");
