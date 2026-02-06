@@ -1,0 +1,29 @@
+{
+  "name": "pet-feeder-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "mongodb",
+    "esp32",
+    "iot"
+  ],
+  "author": "Pedro Duarte",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.5",
+    "mqtt": "^5.15.0"
+  }
+}
