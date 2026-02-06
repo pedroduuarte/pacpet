@@ -11,7 +11,7 @@ export async function login(email, senha) {
 
   console.log("📥 RESPOSTA LOGIN:", data);
 
-  return data; // { token, user }
+  return data; 
 }
 
 export async function register({ name, petName, email, password }) {
