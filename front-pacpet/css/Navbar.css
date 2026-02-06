@@ -1,0 +1,86 @@
+:root {
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --bg-nav: rgba(17, 24, 39, 0.8); /* Azul escuro com transparência */
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-main: #ffffff;
+}
+
+.navbar {
+  height: 70px;
+  background: var(--bg-nav);
+  backdrop-filter: blur(12px); /* Efeito de vidro */
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-main);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 40px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilo do Logo/Link Dashboard */
+.navbar-logo {
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+}
+
+.navbar h1 {
+  color: var(--text-main);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin: 0;
+  background: linear-gradient(to right, #fff, #9ca3af);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* O botão "Liberações" */
+.btn-liberacoes {
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-liberacoes:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.btn-liberacoes:active {
+  transform: translateY(0);
+}
+
+/* Status Online atualizado */
+.status.online {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Pequena animação de pulso no status */
+.status
