@@ -1,124 +1,153 @@
-# API Comedouro Automático
+# PacPet
 
-API REST para registrar e consultar alimentações de um comedouro automático para pets. O projeto foi desenvolvido em Node.js com Express e utiliza MongoDB para persistir o histórico de alimentações, podendo receber registros de um ESP32 e disponibilizá-los para um frontend.
+Comedouro automático para pets com controle por frontend, API REST, comunicação MQTT e um dispositivo ESP32. O sistema permite cadastrar usuários, solicitar uma alimentação manual e acompanhar o histórico e o status das porções liberadas.
+
+## Como funciona
+
+```text
+Frontend -> API -> MQTT (pacpet/command) -> ESP32
+                                      ESP32 -> MQTT (pacpet/feeding/data) -> API -> MongoDB
+```
+
+Ao solicitar uma porção, a API cria um comando com status `pending` e publica o alvo em MQTT. O ESP32 abre o servo em pulsos até atingir o peso informado na célula de carga. Em seguida, publica o resultado e a API atualiza o registro.
 
 ## Tecnologias
 
-- Node.js com ES Modules
-- Express 5
-- MongoDB com Mongoose
-- CORS
-- dotenv
+- **Frontend:** React, React Router, Vite e Recharts
+- **API:** Node.js, Express, Mongoose, JWT e bcrypt
+- **Persistência:** MongoDB
+- **Mensageria:** MQTT
+- **Hardware:** ESP32, servo motor e célula de carga HX711
 
 ## Requisitos
 
-- Node.js instalado
-- Uma instância do MongoDB local ou hospedada
+- Node.js 18 ou superior
+- MongoDB local ou hospedado
+- Broker MQTT acessível pela API e pelo ESP32
+- Arduino IDE ou PlatformIO com suporte ao ESP32, `HX711` e `cJSON`
 
-## Instalação
+## Configuração e execução
 
-Na pasta da API, instale as dependências:
+### API
 
 ```bash
+cd api-pacpet
 npm install
 ```
 
-Crie um arquivo `.env` na raiz da API:
+Crie `api-pacpet/.env`:
 
 ```env
-MONGO_URI=mongodb://localhost:27017/pet-feeder
+MONGO_URI=mongodb://localhost:27017/pacpet
 PORT=3000
+MQTT_BROKER_URL=mqtt://broker.hivemq.com
+JWT_SECRET=troque-por-um-segredo-forte
 ```
 
-`PORT` é opcional e assume `3000` quando não for informado.
-
-## Execução
-
-Para iniciar a API:
+Inicie o servidor:
 
 ```bash
 npm start
 ```
 
-O projeto também possui o script `dev`, que atualmente executa o servidor da mesma forma:
+A API ficará disponível em `http://localhost:3000`. O comando `npm run dev` também inicia o servidor atualmente.
+
+### Frontend principal
 
 ```bash
+cd front-pacpet
+npm install
 npm run dev
 ```
 
-Quando iniciado, o servidor fica disponível em `http://localhost:3000` (ou na porta definida em `PORT`).
+O Vite exibirá a URL local, normalmente `http://localhost:5173`. A URL da API está definida em `front-pacpet/comedouro-automatico/src/api/index.js` e, por padrão, aponta para `http://localhost:3000`.
 
-## Endpoints
+O diretório `front-pacpet/comedouro-automatico` contém um segundo projeto Vite independente, com seus próprios scripts:
 
-Todas as rotas usam o prefixo `/api`.
+```bash
+cd front-pacpet/comedouro-automatico
+npm install
+npm run dev
+```
 
-### Criar alimentação
+### ESP32
 
-`POST /api/feedings`
+1. Abra `firmware/esp32/pacpet_firmware.cpp` na Arduino IDE ou importe o código no ambiente de desenvolvimento do ESP32.
+2. Altere `WIFI_SSID` e `WIFI_PASS` para a rede do dispositivo.
+3. Confira `MQTT_BROKER_URL` e os pinos do servo e do HX711.
+4. Compile e grave o firmware no ESP32.
+5. Abra o monitor serial em `115200` baud para acompanhar a conexão e as alimentações.
 
-Usado pelo dispositivo para registrar uma alimentação. O corpo deve ser JSON e conter:
+As credenciais Wi-Fi estão atualmente no código-fonte. Não use os valores versionados em produção; substitua-os antes de gravar o firmware.
 
-| Campo | Tipo | Valores aceitos |
+## API
+
+### Autenticação
+
+| Método | Rota | Descrição |
 | --- | --- | --- |
-| `weightGrams` | number | Peso liberado em gramas |
-| `openTimeMs` | number | Tempo de abertura em milissegundos |
-| `type` | string | `automatic` ou `manual` |
-| `status` | string | `success` ou `error` |
+| `POST` | `/auth/register` | Cadastra usuário, pet, e-mail e senha |
+| `POST` | `/auth/login` | Autentica e retorna um JWT válido por 7 dias |
 
-Exemplo:
+Exemplo de cadastro:
+
+```bash
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Ana","petName":"Luna","email":"ana@example.com","password":"senha-forte"}'
+```
+
+### Alimentações
+
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| `POST` | `/api/feedings` | Solicita alimentação manual |
+| `GET` | `/api/feedings` | Lista o histórico mais recente primeiro |
+| `GET` | `/api/feedings/:commandId` | Consulta o resultado de um comando |
+| `DELETE` | `/api/feedings/:id` | Exclui um registro pelo `_id` do MongoDB |
+
+Solicitação de alimentação:
 
 ```bash
 curl -X POST http://localhost:3000/api/feedings \
   -H "Content-Type: application/json" \
-  -d '{"weightGrams":50,"openTimeMs":1200,"type":"automatic","status":"success"}'
+  -d '{"weightGrams":50}'
 ```
 
-Resposta de sucesso: `201 Created`, com o registro criado.
-
-### Listar histórico
-
-`GET /api/feedings`
-
-Retorna todos os registros, ordenados do mais recente para o mais antigo.
+A resposta é `202 Accepted` e contém o `commandId`. Use esse identificador para consultar o processamento:
 
 ```bash
-curl http://localhost:3000/api/feedings
+curl http://localhost:3000/api/feedings/COMMAND_ID
 ```
 
-Resposta de sucesso: `200 OK`.
+Um registro de alimentação possui `commandId`, `weightTarget`, `weightGrams`, `openTimeMs`, `type`, `status` e `createdAt`. Os status possíveis são `pending`, `success` e `error`.
 
-### Excluir alimentação
+## MQTT
 
-`DELETE /api/feedings/:id`
+| Tópico | Direção | Payload principal |
+| --- | --- | --- |
+| `pacpet/command` | API -> ESP32 | `commandId`, `command`, `weightGrams`, `type` |
+| `pacpet/feeding/data` | ESP32 -> API | `commandId`, `weightGrams`, `openTimeMs`, `type`, `status` |
 
-Remove um registro pelo `_id` do MongoDB.
+O ESP32 usa a balança para medir a porção e possui timeout de segurança de 50 segundos. O subscriber da API só atualiza comandos existentes e rejeita payloads inválidos.
 
-```bash
-curl -X DELETE http://localhost:3000/api/feedings/65a123456789012345678901
-```
-
-Resposta de sucesso: `204 No Content`.
-
-## Modelo de dados
-
-Cada alimentação contém os campos `weightGrams`, `openTimeMs`, `type`, `status` e `createdAt`. O campo `createdAt` é preenchido automaticamente quando o registro é criado.
-
-## Estrutura do projeto
+## Estrutura
 
 ```text
-src/
-├── app.js                         # Configuração do Express e das rotas
-├── server.js                      # Inicialização do servidor
-├── config/database.js             # Conexão com o MongoDB
-├── controllers/FeedingController.js
-├── models/Feeding.js              # Schema da alimentação
-├── repositories/FeedingRepository.js
-├── routes/feedingRoutes.js
-└── strategies/                    # Estratégias manual e automática
+api-pacpet/
+  src/controllers/   # Regras de autenticação e alimentação
+  src/models/        # Schemas MongoDB
+  src/mqtt/          # Cliente e subscriber MQTT
+  src/repositories/  # Acesso aos dados
+  src/routes/        # Rotas Express
+front-pacpet/        # Frontend React principal
+  components/ pages/ css/
+  comedouro-automatico/ # Segundo frontend Vite independente
+firmware/esp32/      # Código do dispositivo
 ```
 
-## Validações e erros
+## Observações
 
-- Requisições de criação com campos ausentes ou valores inválidos retornam `400 Bad Request`.
-- Falhas ao salvar, consultar ou excluir dados retornam `500 Internal Server Error`.
-- O CORS está habilitado para permitir o consumo da API por aplicações frontend e dispositivos autorizados pela rede.
+- O MongoDB e o broker MQTT precisam estar acessíveis antes de iniciar a API e o ESP32.
+- O CORS está habilitado na API para permitir o acesso do frontend durante o desenvolvimento.
+- A autenticação gera JWT, mas as rotas de alimentação ainda não possuem middleware de autorização no backend.
